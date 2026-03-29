@@ -51,7 +51,7 @@ impl PacketID for PingPong {
 impl Encode for PingPong {
     fn encode(&self) -> Vec<u8> {
         let mut writer = Writer::new();
-        writer.write_int(self.timestamp);
+        writer.write(&self.timestamp.to_be_bytes());
         writer.get_content().to_vec()
     }
 }
