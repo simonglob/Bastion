@@ -11,7 +11,7 @@ impl Intent {
             0 => Self::Handshake,
             1 => Self::Status,
             2 => Self::Login,
-            _ => Self::Handshake
+            _ => Self::Handshake,
         }
     }
 }

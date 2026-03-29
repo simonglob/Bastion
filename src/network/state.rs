@@ -2,13 +2,13 @@ use crate::packets::intent::Intent;
 
 #[derive(Debug)]
 pub struct ConnectionState {
-    current_intent: Intent
+    current_intent: Intent,
 }
 
 impl ConnectionState {
     pub fn new() -> Self {
         Self {
-            current_intent: Intent::Handshake
+            current_intent: Intent::Handshake,
         }
     }
 

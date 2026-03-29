@@ -4,12 +4,15 @@ const CONTINUE_BIT: u8 = 0x80;
 #[derive(Clone, Copy)]
 pub struct Reader<'a> {
     buffer: &'a [u8],
-    pos: usize
+    pos: usize,
 }
 
 impl<'a> Reader<'a> {
     pub fn new(buffer: &'a [u8]) -> Self {
-        Reader { buffer: buffer, pos: 0 }
+        Reader {
+            buffer: buffer,
+            pos: 0,
+        }
     }
 
     pub fn is_empty(&self) -> bool {
@@ -45,7 +48,7 @@ impl<'a> Reader<'a> {
     }
 
     pub fn read_i64(&mut self) -> i64 {
-        let ret = i64::from_be_bytes(self.buffer[self.pos..self.pos+8].try_into().unwrap());
+        let ret = i64::from_be_bytes(self.buffer[self.pos..self.pos + 8].try_into().unwrap());
         self.peek(8);
         ret
     }
@@ -58,7 +61,7 @@ impl<'a> Reader<'a> {
             let current_byte = self.read_u8();
             value |= ((current_byte & SEGMENT_BITS) as i32) << shift;
 
-            if (current_byte & CONTINUE_BIT) == 0{
+            if (current_byte & CONTINUE_BIT) == 0 {
                 break;
             }
 
@@ -76,7 +79,7 @@ impl<'a> Reader<'a> {
         let length = self.read_varint() as usize;
         let string_bytes = &self.buffer[self.pos..self.pos + length];
         self.peek(length);
-        
+
         String::from_utf8(string_bytes.to_vec()).expect("Invalid UTF-8")
     }
 }

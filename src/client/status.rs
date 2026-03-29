@@ -1,8 +1,14 @@
-use crate::{network::state::ConnectionState, packets::{codec::write_packet, state::status::{StatusRequest, StatusResponse}}};
+use crate::{
+    network::state::ConnectionState,
+    packets::{
+        codec::write_packet,
+        state::status::{StatusRequest, StatusResponse},
+    },
+};
 
 pub fn status(packet: StatusRequest, state: &mut ConnectionState) -> std::io::Result<Vec<u8>> {
     println!("ping packet...");
-    
+
     Ok(write_packet(&StatusResponse {
         json: r#"{
             "version": {
@@ -23,6 +29,7 @@ pub fn status(packet: StatusRequest, state: &mut ConnectionState) -> std::io::Re
                 "text": "hello"
             },
             "enforcesSecureChat": false
-        }"#.to_owned()
+        }"#
+        .to_owned(),
     }))
 }

@@ -1,12 +1,10 @@
 pub struct Writer {
-    content: Vec<u8>
+    content: Vec<u8>,
 }
 
 impl Writer {
     pub fn new() -> Self {
-        Self {
-            content: vec![]
-        }
+        Self { content: vec![] }
     }
 
     pub fn get_content(&self) -> &Vec<u8> {

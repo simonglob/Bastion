@@ -4,8 +4,8 @@ pub mod reader;
 pub mod writer;
 
 pub mod codec;
-pub mod intent;
 pub mod dispatcher;
+pub mod intent;
 
-pub mod server;
 pub mod client;
+pub mod server;

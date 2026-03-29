@@ -1,11 +1,16 @@
-use crate::packets::{codec::{Encode, PacketID}, writer::Writer};
+use crate::packets::{
+    codec::{Encode, PacketID},
+    writer::Writer,
+};
 
 pub struct Handshake {
-    pub json: String
+    pub json: String,
 }
 
 impl PacketID for Handshake {
-    fn id() -> u16 { 0x0 }
+    fn id() -> u16 {
+        0x0
+    }
 }
 
 impl Encode for Handshake {

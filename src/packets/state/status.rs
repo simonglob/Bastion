@@ -1,12 +1,17 @@
-use crate::packets::{client::Ping, codec::{Decode, Encode, PacketID}, reader::Reader, writer::Writer};
+use crate::packets::{
+    client::Ping,
+    codec::{Decode, Encode, PacketID},
+    reader::Reader,
+    writer::Writer,
+};
 
 #[derive(Debug)]
-pub struct StatusRequest {
-    
-}
+pub struct StatusRequest {}
 
-impl PacketID for StatusRequest { 
-    fn id() -> u16 { 0x00 } 
+impl PacketID for StatusRequest {
+    fn id() -> u16 {
+        0x00
+    }
 }
 
 impl Decode for StatusRequest {
@@ -16,11 +21,13 @@ impl Decode for StatusRequest {
 }
 
 pub struct StatusResponse {
-    pub json: String
+    pub json: String,
 }
 
-impl PacketID for StatusResponse { 
-    fn id() -> u16 { 0x00 } 
+impl PacketID for StatusResponse {
+    fn id() -> u16 {
+        0x00
+    }
 }
 
 impl Encode for StatusResponse {
@@ -33,11 +40,13 @@ impl Encode for StatusResponse {
 
 // simple echo
 pub struct PingPong {
-    pub timestamp: i64
+    pub timestamp: i64,
 }
 
 impl PacketID for PingPong {
-    fn id() -> u16 { 0x01 }
+    fn id() -> u16 {
+        0x01
+    }
 }
 
 impl Encode for PingPong {
@@ -51,8 +60,7 @@ impl Encode for PingPong {
 impl Decode for PingPong {
     fn decode(reader: &mut Reader) -> std::io::Result<Self> {
         Ok(Self {
-            timestamp: reader.read_i64()
+            timestamp: reader.read_i64(),
         })
     }
 }
-
