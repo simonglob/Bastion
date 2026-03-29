@@ -4,7 +4,7 @@ use crate::{
 };
 
 // echo packet
-pub fn ping(packet: PingPong, state: &mut ConnectionState) -> std::io::Result<Vec<u8>> {
+pub fn ping(packet: PingPong, _: &mut ConnectionState) -> std::io::Result<Vec<u8>> {
     Ok(write_packet(&PingPong {
         timestamp: packet.timestamp,
     }))

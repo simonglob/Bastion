@@ -4,7 +4,7 @@ use crate::packets::{
     reader::Reader,
 };
 
-#[derive(Debug)]
+#[allow(dead_code)]
 pub struct Handshake {
     pub protocol_version: i32,
     pub server_addr: String,

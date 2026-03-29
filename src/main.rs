@@ -40,7 +40,7 @@ async fn main() -> std::io::Result<()> {
     println!("Listening on 127.0.0.1:3000");
 
     loop {
-        let (socket, addr) = listener.accept().await?;
+        let (socket, _) = listener.accept().await?;
         let state = shared.clone();
         conn_id += 1;
 

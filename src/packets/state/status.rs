@@ -1,5 +1,4 @@
 use crate::packets::{
-    client::Ping,
     codec::{Decode, Encode, PacketID},
     reader::Reader,
     writer::Writer,
@@ -52,7 +51,7 @@ impl PacketID for PingPong {
 impl Encode for PingPong {
     fn encode(&self) -> Vec<u8> {
         let mut writer = Writer::new();
-        writer.write_i64(self.timestamp);
+        writer.write_int(self.timestamp);
         writer.get_content().to_vec()
     }
 }

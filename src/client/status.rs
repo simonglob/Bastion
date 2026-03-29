@@ -6,9 +6,8 @@ use crate::{
     },
 };
 
-pub fn status(packet: StatusRequest, state: &mut ConnectionState) -> std::io::Result<Vec<u8>> {
-    println!("ping packet...");
-
+pub fn status(_: StatusRequest, _: &mut ConnectionState) -> std::io::Result<Vec<u8>> {
+    // TODO: improve this
     Ok(write_packet(&StatusResponse {
         json: r#"{
             "version": {

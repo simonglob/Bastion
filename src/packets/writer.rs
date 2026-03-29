@@ -1,3 +1,43 @@
+pub trait ToBeBytes {
+    fn to_be_bytes(self) -> Vec<u8>;
+}
+
+impl ToBeBytes for u16 {
+    fn to_be_bytes(self) -> Vec<u8> {
+        self.to_be_bytes().to_vec()
+    }
+}
+
+impl ToBeBytes for i16 {
+    fn to_be_bytes(self) -> Vec<u8> {
+        self.to_be_bytes().to_vec()
+    }
+}
+
+impl ToBeBytes for u32 {
+    fn to_be_bytes(self) -> Vec<u8> {
+        self.to_be_bytes().to_vec()
+    }
+}
+
+impl ToBeBytes for i32 {
+    fn to_be_bytes(self) -> Vec<u8> {
+        self.to_be_bytes().to_vec()
+    }
+}
+
+impl ToBeBytes for u64 {
+    fn to_be_bytes(self) -> Vec<u8> {
+        self.to_be_bytes().to_vec()
+    }
+}
+
+impl ToBeBytes for i64 {
+    fn to_be_bytes(self) -> Vec<u8> {
+        self.to_be_bytes().to_vec()
+    }
+}
+
 pub struct Writer {
     content: Vec<u8>,
 }
@@ -15,15 +55,7 @@ impl Writer {
         self.content.push(i);
     }
 
-    pub fn write_u16(&mut self, i: u16) {
-        self.content.extend(i.to_be_bytes());
-    }
-
-    pub fn write_u32(&mut self, i: u32) {
-        self.content.extend(i.to_be_bytes());
-    }
-
-    pub fn write_i64(&mut self, i: i64) {
+    pub fn write_int<T: ToBeBytes>(&mut self, i: T) {
         self.content.extend(i.to_be_bytes());
     }
 

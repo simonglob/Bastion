@@ -19,18 +19,6 @@ impl<'a> Reader<'a> {
         self.buffer[self.pos..].len() <= 0
     }
 
-    pub fn get_pos(&self) -> usize {
-        self.pos
-    }
-
-    pub fn set_pos(&mut self, pos: usize) {
-        self.pos = pos;
-    }
-
-    pub fn get_buffer(&self) -> &'a [u8] {
-        self.buffer
-    }
-
     pub fn peek(&mut self, size: usize) {
         self.pos += size;
     }
