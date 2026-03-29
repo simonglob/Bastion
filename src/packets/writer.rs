@@ -25,6 +25,10 @@ impl Writer {
         self.content.extend(i.to_be_bytes());
     }
 
+    pub fn write_i64(&mut self, i: i64) {
+        self.content.extend(i.to_be_bytes());
+    }
+
     pub fn write_varint(&mut self, mut value: u32) {
         loop {
             if (value & !0x7F) == 0 {

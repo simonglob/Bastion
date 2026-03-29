@@ -14,12 +14,16 @@ pub trait Decode: PacketID + Sized {
 
 pub fn write_packet<P: Encode>(packet: &P) -> Vec<u8> {
     let payload = packet.encode();
-    let length = 6 + payload.len(); // 6 because 4 for length and 2 for packet id
+
+    let mut inner = Writer::new();
+    inner.write_varint(P::id() as u32);
+    inner.write_all(&payload);
+
+    let inner_bytes = inner.get_content();
 
     let mut writer = Writer::new();
-    writer.write_varint(length as u32);
-    writer.write_varint(P::id() as u32);
-    writer.write_all(&payload);
+    writer.write_varint(inner_bytes.len() as u32);
+    writer.write_all(&inner_bytes);
 
     writer.get_content().to_vec()
 }
