@@ -1,6 +1,7 @@
 const SEGMENT_BITS: u8 = 0x7F;
 const CONTINUE_BIT: u8 = 0x80;
 
+#[derive(Clone, Copy)]
 pub struct Reader<'a> {
     buffer: &'a [u8],
     pos: usize
@@ -12,7 +13,19 @@ impl<'a> Reader<'a> {
     }
 
     pub fn is_empty(&self) -> bool {
-        self.pos > self.buffer.len()
+        self.buffer[self.pos..].len() <= 0
+    }
+
+    pub fn get_pos(&self) -> usize {
+        self.pos
+    }
+
+    pub fn set_pos(&mut self, pos: usize) {
+        self.pos = pos;
+    }
+
+    pub fn get_buffer(&self) -> &'a [u8] {
+        self.buffer
     }
 
     pub fn peek(&mut self, size: usize) {
@@ -28,6 +41,12 @@ impl<'a> Reader<'a> {
     pub fn read_u16(&mut self) -> u16 {
         let ret = u16::from_be_bytes([self.buffer[self.pos], self.buffer[self.pos + 1]]);
         self.peek(2);
+        ret
+    }
+
+    pub fn read_i64(&mut self) -> i64 {
+        let ret = i64::from_be_bytes(self.buffer[self.pos..self.pos+8].try_into().unwrap());
+        self.peek(8);
         ret
     }
 
@@ -53,11 +72,11 @@ impl<'a> Reader<'a> {
         value
     }
 
-    pub fn read_string(&mut self) -> &'a str {
+    pub fn read_string(&mut self) -> String {
         let length = self.read_varint() as usize;
         let string_bytes = &self.buffer[self.pos..self.pos + length];
         self.peek(length);
         
-        std::str::from_utf8(string_bytes).expect("Invalid UTF-8")
+        String::from_utf8(string_bytes.to_vec()).expect("Invalid UTF-8")
     }
 }

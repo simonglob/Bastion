@@ -1,11 +1,22 @@
-mod io;
+mod packets;
+mod client;
 
-use tokio::{
-    io::{AsyncReadExt},
-    net::{TcpListener},
-};
+use std::sync::LazyLock;
 
-use crate::io::reader::Reader;
+use tokio::{io::{AsyncReadExt, AsyncWriteExt}, net::TcpListener};
+
+use crate::{client::handshake::{handshake, pong}, packets::{
+    codec::read_frame, dispatcher::PacketDispatcher, reader::Reader,
+}};
+
+static DISPATCHER: LazyLock<PacketDispatcher> = LazyLock::new(|| {
+    let mut dispatcher = PacketDispatcher::default();
+
+    dispatcher.register(handshake);
+    dispatcher.register(pong);
+
+    dispatcher
+});
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
@@ -13,34 +24,47 @@ async fn main() -> std::io::Result<()> {
     println!("Listening on 127.0.0.1:3000");
 
     loop {
-        let (mut socket, _) = listener.accept().await?;
+        let (socket, _) = listener.accept().await?;
 
         tokio::spawn(async move {
-            let mut buffer = vec![0u8; 1024];
+            if let Err(e) = handle_connection(socket).await {
+                eprintln!("Connection error: {e}")
+            }
+        });
+    }
+}
+
+async fn handle_connection(mut socket: tokio::net::TcpStream) -> std::io::Result<()> {
+    let mut buffer = [0u8; 1024];
+    println!("Got connection!");
+
+    loop {
+        let pos = socket.read(&mut buffer).await?;
+        let mut reader = Reader::new(&buffer[..pos]);
+        let mut output = vec![];
+
+        loop {
+            let (length, id) = match read_frame(&mut reader) {
+                Some(frame) => frame,
+                None => break, // nothing left to read
+            };
+
+            // if reader.is_empty() {
+            //     eprintln!("packet already empty after reading headers");
+            //     break
+            // }
             
-            let pos = socket
-                .read(&mut buffer)
-                .await
-                .expect("failed to read data");
-
-            let body = &buffer[..pos];
-            let mut packet = Reader::new(body);
-
-            let length = packet.read_varint();
-            let packet_id = packet.read_varint(); 
-
-            if packet_id != 0 {
-                return;
+            match DISPATCHER.dispatch(id, &mut reader) {
+                Ok(data) => output.extend_from_slice(&data),
+                Err(e) => {
+                    reader.peek(length);
+                    eprintln!("packet {id:#04x} had an error: {:?}", e);
+                }
             }
 
-            let protocol_version = packet.read_varint();
-            let server_addr = packet.read_string();
-            let port = packet.read_u16();
-            let intent = packet.read_varint();
-            println!(
-                "length: {:?} packet_id: {:?} protocol_version: {:?} server_addr: {:?} port: {:?} intent: {:?}",
-                length, packet_id, protocol_version, server_addr, port, intent
-            );
-        });
+            println!("found a packet with packet id {id} and length {length}. the position after presumably parsing the rest of the packet is {:?}", reader.get_pos());
+        }
+        socket.write_all(&output).await?;
+        socket.flush().await?;
     }
 }
