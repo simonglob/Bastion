@@ -1,10 +1,13 @@
+use bytes::{Buf, Bytes};
+
 use crate::packets::{
     codec::{Decode, PacketID},
     intent::Intent,
-    reader::Reader,
+    reader::MinecraftProtocol,
 };
 
 #[allow(dead_code)]
+#[derive(Debug)]
 pub struct Handshake {
     pub protocol_version: i32,
     pub server_addr: String,
@@ -19,12 +22,12 @@ impl PacketID for Handshake {
 }
 
 impl Decode for Handshake {
-    fn decode(reader: &mut Reader) -> std::io::Result<Self> {
+    fn decode(reader: &mut Bytes) -> std::io::Result<Self> {
         Ok(Self {
-            protocol_version: reader.read_varint(),
-            server_addr: reader.read_string(),
-            server_port: reader.read_u16(),
-            intent: Intent::from_value(reader.read_varint()),
+            protocol_version: reader.get_var_int(),
+            server_addr: reader.get_string(),
+            server_port: reader.get_u16(),
+            intent: Intent::from_value(reader.get_var_int()),
         })
     }
 }

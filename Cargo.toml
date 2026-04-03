@@ -4,4 +4,11 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+bytes = "1.11.1"
+num-bigint = "0.4.6"
+rand = "0.10.0"
+reqwest = { version = "0.13.2" }
+rsa = "0.9.10"
+sha1 = "0.11.0"
 tokio = { version = "1", features = ["full"] }
+uuid = "1.23.0"

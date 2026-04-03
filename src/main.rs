@@ -1,35 +1,13 @@
-mod client;
-mod network;
-mod packets;
-
-use std::{
-    collections::HashMap,
-    sync::{Arc, LazyLock},
-};
-
+use bytes::{Buf, Bytes};
 use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
     net::TcpListener,
-    sync::Mutex,
 };
 
-use crate::{
-    client::{handshake::handshake, ping::ping, status::status},
-    network::state::ConnectionState,
-    packets::{codec::read_frame, dispatcher::PacketDispatcher, intent::Intent, reader::Reader},
+use Bastion::{
+    network::session::Session,
+    packets::{ClientPacket, codec::read_frame},
 };
-
-static DISPATCHER: LazyLock<PacketDispatcher> = LazyLock::new(|| {
-    let mut dispatcher = PacketDispatcher::default();
-
-    dispatcher.register(handshake, Intent::Handshake);
-    dispatcher.register(status, Intent::Status);
-    dispatcher.register(ping, Intent::Status);
-
-    dispatcher
-});
-
-type SharedState = Arc<Mutex<HashMap<u64, ConnectionState>>>;
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
@@ -39,7 +17,6 @@ async fn main() -> std::io::Result<()> {
 
     loop {
         let (socket, _) = listener.accept().await?;
-
         tokio::spawn(async move {
             if let Err(e) = handle_connection(socket).await {
                 eprintln!("Connection error: {e}")
@@ -49,33 +26,35 @@ async fn main() -> std::io::Result<()> {
 }
 
 async fn handle_connection(mut socket: tokio::net::TcpStream) -> std::io::Result<()> {
-    let mut state = ConnectionState::new();
-    let mut buffer = [0u8; 1024];
+    let mut state = Session::new();
+    let mut _buffer = [0u8; 1024];
 
     loop {
-        let pos = socket.read(&mut buffer).await?;
+        let pos = socket.read(&mut _buffer).await?;
         if pos == 0 {
             return Ok(());
         }
 
-        let mut reader = Reader::new(&buffer[..pos]);
-        let mut output = vec![];
+        let mut buffer = Bytes::copy_from_slice(&_buffer[..pos]);
+        let mut output: Vec<u8> = vec![];
 
         loop {
-            let (length, id) = match read_frame(&mut reader) {
+            let (length, id) = match read_frame(&mut buffer) {
                 Some(frame) => frame,
                 None => break, // nothing left to read
             };
 
-            match DISPATCHER.dispatch(id, &mut reader, &mut state) {
+            let packet = ClientPacket::from(id, state.get_state(), &mut buffer);
+            println!("{:?}", packet);
+            match ClientPacket::match_handler(packet, &mut state).await {
                 Ok(data) => output.extend_from_slice(&data),
                 Err(e) => {
-                    reader.peek(length);
                     eprintln!(
                         "packet {id:#04x} (state: {:?}) had an error: {:?}",
                         state.get_state(),
                         e
                     );
+                    buffer.advance(length);
                 }
             }
         }

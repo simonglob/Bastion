@@ -1,12 +1,12 @@
 use crate::{
-    network::state::ConnectionState,
+    network::session::Session,
     packets::{
         codec::write_packet,
-        state::status::{StatusRequest, StatusResponse},
+        state::status::{PingPong, StatusRequest, StatusResponse},
     },
 };
 
-pub fn status(_: StatusRequest, _: &mut ConnectionState) -> std::io::Result<Vec<u8>> {
+pub async fn status(_: StatusRequest, _: &mut Session) -> std::io::Result<Vec<u8>> {
     // TODO: improve this
     Ok(write_packet(&StatusResponse {
         json: r#"{
@@ -31,4 +31,8 @@ pub fn status(_: StatusRequest, _: &mut ConnectionState) -> std::io::Result<Vec<
         }"#
         .to_owned(),
     }))
+}
+
+pub async fn ping(packet: PingPong, _: &mut Session) -> std::io::Result<Vec<u8>> {
+    Ok(write_packet(&packet))
 }

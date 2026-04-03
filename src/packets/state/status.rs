@@ -1,8 +1,10 @@
+use bytes::{Buf, Bytes};
+
 use crate::packets::{
     codec::{Decode, Encode, PacketID},
-    reader::Reader,
     writer::Writer,
 };
+// simple echo
 
 #[derive(Debug)]
 pub struct StatusRequest {}
@@ -14,7 +16,7 @@ impl PacketID for StatusRequest {
 }
 
 impl Decode for StatusRequest {
-    fn decode(_: &mut Reader) -> std::io::Result<Self> {
+    fn decode(_: &mut Bytes) -> std::io::Result<Self> {
         Ok(Self {})
     }
 }
@@ -30,14 +32,12 @@ impl PacketID for StatusResponse {
 }
 
 impl Encode for StatusResponse {
-    fn encode(&self) -> Vec<u8> {
-        let mut writer = Writer::new();
+    fn encode(&self, writer: &mut Writer) {
         writer.write_str(&self.json);
-        writer.get_content().to_vec()
     }
 }
 
-// simple echo
+#[derive(Debug)]
 pub struct PingPong {
     pub timestamp: i64,
 }
@@ -49,17 +49,15 @@ impl PacketID for PingPong {
 }
 
 impl Encode for PingPong {
-    fn encode(&self) -> Vec<u8> {
-        let mut writer = Writer::new();
+    fn encode(&self, writer: &mut Writer) {
         writer.write(&self.timestamp.to_be_bytes());
-        writer.get_content().to_vec()
     }
 }
 
 impl Decode for PingPong {
-    fn decode(reader: &mut Reader) -> std::io::Result<Self> {
+    fn decode(buffer: &mut Bytes) -> std::io::Result<Self> {
         Ok(Self {
-            timestamp: reader.read_i64(),
+            timestamp: buffer.get_i64(),
         })
     }
 }
